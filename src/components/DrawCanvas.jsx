@@ -1,4 +1,3 @@
-// src/components/DrawCanvas.jsx
 import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
