@@ -1,5 +1,6 @@
 // src/components/DrawCanvas.jsx
 import { useRef, useState } from 'react';
+import { supabase } from '../supabaseClient';
 
 function getPos(e, canvas) {
   const rect = canvas.getBoundingClientRect();
@@ -13,10 +14,13 @@ function DrawCanvas() {
   const canvasRef = useRef(null);
   const currentStroke = useRef(null);
   const isDrawing = useRef(false);
+
   const [strokes, setStrokes] = useState([]);
   const [color, setColor] = useState('#000000');
   const [width, setWidth] = useState(3);
   const [showJson, setShowJson] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   function handleMouseDown(e) {
     const pos = getPos(e, canvasRef.current);
@@ -58,6 +62,25 @@ function DrawCanvas() {
     setStrokes([]);
   }
 
+  async function saveDoodle() {
+    if (strokes.length === 0) return;
+    setSaving(true);
+    setSaveError(null);
+
+    const { error } = await supabase
+      .from('doodles')
+      .insert({ strokes });
+
+    setSaving(false);
+
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+
+    clearCanvas();
+  }
+
   return (
     <div>
       <div className="toolbar">
@@ -77,8 +100,8 @@ function DrawCanvas() {
             max="20"
             value={width}
             onChange={(e) => setWidth(Number(e.target.value))}
-          />
-          {' '}{width}px
+          />{' '}
+          {width}px
         </label>
       </div>
 
@@ -98,8 +121,12 @@ function DrawCanvas() {
         <button onClick={() => setShowJson((prev) => !prev)}>
           {showJson ? 'Hide' : 'Show'} Raw JSON
         </button>
+        <button onClick={saveDoodle} disabled={saving || strokes.length === 0}>
+          {saving ? 'Saving...' : 'Save Doodle'}
+        </button>
       </div>
 
+      {saveError && <p style={{ color: 'red' }}>Error: {saveError}</p>}
       {showJson && <pre>{JSON.stringify(strokes, null, 2)}</pre>}
     </div>
   );
