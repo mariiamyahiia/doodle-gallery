@@ -1,10 +1,11 @@
+// src/components/DoodleCard.jsx
 import { useRef, useEffect } from 'react';
 import { drawStrokes } from '../utils/drawStrokes';
 
 const ORIGINAL_SIZE = 500;
 const THUMBNAIL_SIZE = 200;
 
-function DoodleCard({ doodle }) {
+function DoodleCard({ doodle, onOpen }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -19,12 +20,18 @@ function DoodleCard({ doodle }) {
   }, [doodle]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={THUMBNAIL_SIZE}
-      height={THUMBNAIL_SIZE}
-      style={{ border: '1px solid #ccc' }}
-    />
+    <button
+      type="button"
+      className="doodle-card"
+      onClick={() => onOpen(doodle)}
+      aria-label="Open doodle"
+    >
+      <canvas
+        ref={canvasRef}
+        width={THUMBNAIL_SIZE}
+        height={THUMBNAIL_SIZE}
+      />
+    </button>
   );
 }
 
